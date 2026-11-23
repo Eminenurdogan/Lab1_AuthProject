@@ -1,19 +1,34 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { post } from '../api';
 
 function Login() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError('');
 
     if (!email || !password) {
       setError('E-posta ve şifre alanları boş bırakılamaz');
       return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await post('/auth/login', { email, password });
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/home');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -37,7 +52,9 @@ function Login() {
           <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
 
-        <button type="submit">Giriş Yap</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+        </button>
 
         <div className="links">
           <Link to="/forgot-password">Şifremi unuttum</Link>

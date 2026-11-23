@@ -17,6 +17,10 @@ module.exports = async (req, res, next) => {
       return res.status(400).json({ message: 'Şifre en az 8 karakter olmalı, harf ve rakam içermeli' });
     }
 
+    if (db.findUserByEmail(email.trim())) {
+      return res.status(409).json({ message: 'Bu e-posta ile kayıtlı bir kullanıcı var' });
+    }
+
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = db.addUser({

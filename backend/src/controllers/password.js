@@ -1,6 +1,7 @@
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const db = require('../db');
-const { isValidEmail } = require('../utils/validators');
+const { isValidEmail, isStrongPassword } = require('../utils/validators');
 
 function hashToken(token) {
   return crypto.createHash('sha256').update(token).digest('hex');
@@ -28,8 +29,29 @@ function forgotPassword(req, res) {
   res.json({ message });
 }
 
-function resetPassword(req, res) {
-  res.status(501).json({ message: 'Henüz hazır değil' });
+async function resetPassword(req, res, next) {
+  try {
+    const { email, token, password } = req.body;
+
+    if (!email || !token || !password) {
+      return res.status(400).json({ message: 'E-posta, token ve yeni şifre zorunlu' });
+    }
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({ message: 'Şifre en az 8 karakter olmalı, harf ve rakam içermeli' });
+    }
+
+    const user = db.findUserByEmail(email.trim());
+    if (!user || !user.resetTokenHash || user.resetTokenHash !== hashToken(token)) {
+      return res.status(400).json({ message: 'Sıfırlama bağlantısı geçersiz' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    db.updateUser(user.id, { passwordHash, resetTokenHash: null });
+
+    res.json({ message: 'Şifren güncellendi, yeni şifrenle giriş yapabilirsin' });
+  } catch (err) {
+    next(err);
+  }
 }
 
 module.exports = { forgotPassword, resetPassword };

@@ -57,7 +57,7 @@ function ResetPassword() {
     <div className="page">
       <form className="card" onSubmit={handleSubmit} noValidate>
         <h2>Yeni Şifre Belirle</h2>
-        <p style={{ fontSize: 14, color: '#555', marginTop: -8 }}>{email}</p>
+        <p className="hint">{email}</p>
 
         {error && <div className="alert error">{error}</div>}
         {success && <div className="alert success">{success}</div>}

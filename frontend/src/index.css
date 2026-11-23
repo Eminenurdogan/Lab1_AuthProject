@@ -102,3 +102,9 @@ button:disabled {
   background: #e8f5e9;
   color: #1b5e20;
 }
+
+.hint {
+  font-size: 14px;
+  color: #555;
+  margin-top: -8px;
+}

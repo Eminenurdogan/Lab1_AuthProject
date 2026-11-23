@@ -33,7 +33,7 @@ function ForgotPassword() {
     <div className="page">
       <form className="card" onSubmit={handleSubmit} noValidate>
         <h2>Şifremi Unuttum</h2>
-        <p style={{ fontSize: 14, color: '#555', marginTop: -8 }}>
+        <p className="hint">
           Kayıtlı e-posta adresini gir, sana şifre sıfırlama bağlantısı gönderelim.
         </p>
 

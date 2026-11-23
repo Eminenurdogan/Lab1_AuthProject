@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { post } from '../api';
 
 function validate(form) {
   const errors = {};
@@ -25,24 +26,42 @@ function validate(form) {
 function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', passwordAgain: '' });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setServerError('');
     const result = validate(form);
     setErrors(result);
     if (Object.keys(result).length > 0) return;
 
-    console.log(form);
+    setLoading(true);
+    try {
+      await post('/auth/register', {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
+      navigate('/login', { state: { registered: true } });
+    } catch (err) {
+      setServerError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="page">
       <form className="card" onSubmit={handleSubmit} noValidate>
         <h2>Kayıt Ol</h2>
+
+        {serverError && <div className="alert error">{serverError}</div>}
 
         <div className="field">
           <label htmlFor="name">Ad Soyad</label>
@@ -74,7 +93,9 @@ function Register() {
           {errors.passwordAgain && <div className="error">{errors.passwordAgain}</div>}
         </div>
 
-        <button type="submit">Kayıt Ol</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Kaydediliyor...' : 'Kayıt Ol'}
+        </button>
 
         <div className="links">
           Hesabın var mı? <Link to="/login">Giriş yap</Link>
